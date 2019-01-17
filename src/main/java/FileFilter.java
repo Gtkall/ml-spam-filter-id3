@@ -8,7 +8,7 @@ public class FileFilter {
 
         return dirName.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String filename)
-            { return filename.startsWith("spmsg"); }
+            { return filename.contains("spmsg"); }
         } );
     }
 
@@ -17,7 +17,7 @@ public class FileFilter {
 
         return dirName.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String filename)
-            { return !filename.startsWith("spmsg"); }
+            { return !filename.contains("spmsg"); }
         } );
     }
 }

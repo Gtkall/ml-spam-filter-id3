@@ -2,11 +2,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.log;
+import static org.apache.commons.math3.util.FastMath.pow;
 
 public class ID3 {
 
 
-    private static final boolean DEBUG_VERBOSE = true;
+    private static final boolean DEBUG_VERBOSE = false;
 
     public static double computeEntropy(ArrayList<Mail> mails) {
 
@@ -16,6 +17,8 @@ public class ID3 {
         double p_spam;
         double p_ham;
         double sum = mails.size();
+
+        if (sum == 0) return 0;
 
         for (Mail mail :
                 mails) {
@@ -29,9 +32,17 @@ public class ID3 {
         p_spam = spam / sum;
         p_ham = ham / sum;
 
-        entropy = -p_spam * log(2, p_spam) - p_ham * log(2, p_ham);
+        if (p_ham == 0 || p_spam == 0) {
+            return 0;
+        }
 
-        return entropy;
+        entropy = -(log(2, pow(p_spam, p_spam)) + log(2, pow(p_ham, p_ham)));
+
+        if (DEBUG_VERBOSE) {
+            System.out.println("Entropy of SET is " + entropy);
+        }
+
+        return Double.isNaN(entropy) ? 0 : entropy;
 
     }
 
@@ -43,6 +54,8 @@ public class ID3 {
         double p_spam;
         double p_ham;
         int sum = mails.size();
+
+        if (sum == 0) return 0;
 
         if (exists) {
             for (Mail mail :
@@ -71,13 +84,17 @@ public class ID3 {
         p_spam = spam / sum;
         p_ham = ham / sum;
 
-        entropy = -p_spam * log(2, p_spam) - p_ham * log(2, p_ham);
+        if (p_ham == 0 || p_spam == 0) {
+            return 0;
+        }
+
+        entropy = -(log(2, pow(p_spam, p_spam)) + log(2, pow(p_ham, p_ham)));
 
         if (DEBUG_VERBOSE) {
             System.out.println("Entropy of " + word + " is " + entropy);
         }
 
-        return entropy;
+        return Double.isNaN(entropy) ? 0 : entropy;
     }
 
     public static double computeInfoGain (DataSet dataSet, String word) {
@@ -86,6 +103,8 @@ public class ID3 {
         double sum_wordExists = 0;
         double p_wordExists;
         int sum = dataSet.getMails().size();
+
+        if (sum == 0) return 0;
 
         for (Mail mail :
                 dataSet.getMails()) {
@@ -100,20 +119,20 @@ public class ID3 {
         double wordExistsEntropy = computeEntropyOfAttribute(dataSet.getMails(), word, true);
         double wordNotExistsEntropy = computeEntropyOfAttribute(dataSet.getMails(), word, false);
 
-        ig = dsEntropy - (p_wordExists * wordExistsEntropy) - ((1-p_wordExists) * wordNotExistsEntropy);
+        ig = dsEntropy - ((p_wordExists * wordExistsEntropy) + ((1-p_wordExists) * wordNotExistsEntropy));
 
         if (DEBUG_VERBOSE) {
             System.out.println("Info Gain of word " + word + " is " + ig);
         }
 
-        return ig;
+        return Double.isNaN(ig) ? 0 : ig;
         
     }
 
     public static String chooseBestAttribute (DataSet dataSet, List<String> attributes) {
-        double max = 0;
-        int pointer = 0;
-        double curInfoGain = 0;
+        double max = -1;
+        int pointer = -1;
+        double curInfoGain;
 
         for (int i = 0; i < attributes.size(); i++) {
             String attribute = attributes.get(i);
@@ -137,9 +156,9 @@ public class ID3 {
         if (dataSet.getMails().isEmpty()) { // no more mails in the current dataset
             if (isSpam) return new TreeNode<>("YES");
             else return new TreeNode<>("NO");
-        } else if (checkIfSpam(dataSet)) { // if 100% of mails are spam
+        } else if (checkIfSpam(dataSet)) { // if 90% of mails are spam
             return new TreeNode<>("YES");
-        } else if (checkIfHam(dataSet)) { // if 100% of mails are ham
+        } else if (checkIfHam(dataSet)) { // if 90% of mails are ham
             return new TreeNode<>("NO");
         } else if (attributes.isEmpty()) { // if there are no more attributes to evaluate
             if (checkDataSet(dataSet)) return new TreeNode<>("YES");
@@ -184,10 +203,10 @@ public class ID3 {
 
         for (Mail mail:
              dataSet.getMails()) {
-            if (mail.isSpam()) sum++;
+            if (!mail.isSpam()) return false;
         }
 
-        return sum == dataSet.getMails().size();
+        return true;
     }
 
     private static boolean checkIfHam(DataSet dataSet) { // TODO: maybe implement check on DataSet class
@@ -195,10 +214,10 @@ public class ID3 {
 
         for (Mail mail:
                 dataSet.getMails()) {
-            if (!mail.isSpam()) sum++;
+            if (mail.isSpam()) return false;
         }
 
-        return sum == dataSet.getMails().size();
+        return true;
     }
 
 }

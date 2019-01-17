@@ -166,12 +166,12 @@ public class Main {
                             (category.findTreeNode("NO") != null && !mail.isSpam())) { // brute-force JUST TO FIND SOMETHING!!
                         successful++;
                         c = "NO";
-                        if (category.findTreeNode("YES").data == "YES") c = "YES";
+                        if (category.findTreeNode("YES").data.equals("YES")) c = "YES";
                         System.out.println("Mail " + mail.getId() + " is " + c);
                     } else System.out.println("Failed to categorize " + mail.getId());
                 }
 
-                int s = (successful / sum) * 100;
+                double s = (double)((successful / sum) * 100);
                 System.out.println(s);
 
             }
