@@ -17,6 +17,13 @@ public class DataSet {
         setMails(mails);
     }
 
+    public DataSet(DataSet data) {
+        this.id = data.id;
+        this.mails = new ArrayList<>();
+        this.mails.addAll(data.mails);
+        this.lexicon = new HashMap<>(data.lexicon);
+    }
+
 
     public DataSet(String id) {
         this.id = id;

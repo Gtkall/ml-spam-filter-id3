@@ -155,25 +155,41 @@ public class Main {
 
                 int sum = testDataset.getMails().size();
                 int successful = 0;
+                int TP = 0;
+                int FP = 0;
+                int TN = 0;
+                int FN = 0;
 
-                String c;
                 for (Mail mail :
                         testDataset.getMails()) {
-
-                    TreeNode<String> category = ID3.determineIfSpam(dataSet, mail.getWordsAsList(), false);
-
-                    if ((category.findTreeNode("YES") != null && mail.isSpam()) ||
-                            (category.findTreeNode("NO") != null && !mail.isSpam())) { // brute-force JUST TO FIND SOMETHING!!
+                    TreeNode<String> category = ID3.determineIfSpam(dataSet, mail.getWordsAsList(), true);
+                    if (category.findTreeNode("YES") != null && mail.isSpam()) {
+                        System.out.println("Mail " + mail.getId() + " classified correctly as spam");
                         successful++;
-                        c = "NO";
-                        if (category.findTreeNode("YES").data.equals("YES")) c = "YES";
-                        System.out.println("Mail " + mail.getId() + " is " + c);
-                    } else System.out.println("Failed to categorize " + mail.getId());
+                        TP++;
+                    } else if (category.findTreeNode("NO") != null && !mail.isSpam()) {
+                        System.out.println("Mail " + mail.getId() + " classified correctly as non spam");
+                        successful++;
+                        TN++;
+                    } else {
+                        System.out.println("Failed to categorize " + mail.getId());
+                        if (category.findTreeNode("YES") != null && !mail.isSpam()) {
+                            System.out.println("Mail " + mail.getId() + " was non spam");
+                            FP++;
+                        } else if (category.findTreeNode("NO") != null && mail.isSpam()) {
+                            System.out.println("Mail " + mail.getId() + " was spam");
+                            FN++;
+                        }
+
+                    }
                 }
 
-                double s = (double)((successful / sum) * 100);
-                System.out.println(s);
-
+                double accuracy = (((double)successful / (double)sum) * 100);
+                double precision = (double)TP / (double)(TP + FP);
+                double recall = (double)TP / (double)(TP + FN);
+                System.out.println("Accuracy: " + accuracy);
+                System.out.println("Precision: " + precision);
+                System.out.println("Recall: " + recall);
             }
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("Please give a Dataset Directory as an argument when calling the program.");

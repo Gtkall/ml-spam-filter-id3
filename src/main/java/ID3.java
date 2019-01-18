@@ -126,7 +126,7 @@ public class ID3 {
         }
 
         return Double.isNaN(ig) ? 0 : ig;
-        
+
     }
 
     public static String chooseBestAttribute (DataSet dataSet, List<String> attributes) {
@@ -150,6 +150,7 @@ public class ID3 {
         return attributes.get(pointer);
     }
 
+
     public static TreeNode<String> determineIfSpam(DataSet dataSet, List<String> attributes, boolean isSpam) {
 
         TreeNode<String> tn;
@@ -170,15 +171,24 @@ public class ID3 {
 
             attributes.remove(attribute);
 
-            DataSet subSet1 = new DataSet(dataSet.getMails(attribute, true));
-            TreeNode<String> child1 = determineIfSpam(subSet1, attributes, m);
+            //DataSet subSet1 = new DataSet(dataSet.getMails(attribute, true));
+            //DataSet subSet2 = new DataSet(dataSet.getMails(attribute, false));
+            //DataSet subSet1 = new DataSet(dataSet.getMails(attribute, true));
+            //dataSet = new DataSet(subSet1);
+            dataSet = new DataSet(dataSet.getMails(attribute, true));
+            //TreeNode<String> child1 = determineIfSpam(subSet1, attributes, m);
+            TreeNode<String> child1 = determineIfSpam(dataSet, attributes, m);
             tn.addChild(child1.data);
 
-            DataSet subSet2 = new DataSet(dataSet.getMails(attribute, false));
-            TreeNode<String> child2 = determineIfSpam(subSet2, attributes, m);
+            //DataSet subSet2 = new DataSet(dataSet.getMails(attribute, false));
+            //dataSet = new DataSet(subSet2);
+            dataSet = new DataSet(dataSet.getMails(attribute, false));
+            //TreeNode<String> child2 = determineIfSpam(subSet2, attributes, m);
+            TreeNode<String> child2 = determineIfSpam(dataSet, attributes, m);
             tn.addChild(child2.data);
 
             if (DEBUG_VERBOSE) {
+                System.out.println("Children : "+tn.children.size());
                 System.out.println("Current level: " + tn.getLevel());
             }
             return tn;
@@ -198,26 +208,32 @@ public class ID3 {
         return spamSum >= hamSum;
     }
 
-    private static boolean checkIfSpam(DataSet dataSet) { // TODO: maybe implement check on DataSet class
-        int sum = 0;
-
-        for (Mail mail:
+    private static boolean checkIfSpam(DataSet dataSet) {
+       /* for (Mail mail:
              dataSet.getMails()) {
             if (!mail.isSpam()) return false;
         }
 
-        return true;
+        return true;*/
+        int count = 0;
+        for(Mail mail : dataSet.getMails()) {
+            if(mail.isSpam()) count++;
+        }
+        return ((double)count / (double)(dataSet.getMails().size()) >= 0.95);
     }
 
-    private static boolean checkIfHam(DataSet dataSet) { // TODO: maybe implement check on DataSet class
-        int sum = 0;
-
-        for (Mail mail:
+    private static boolean checkIfHam(DataSet dataSet) {
+        /*for (Mail mail:
                 dataSet.getMails()) {
             if (mail.isSpam()) return false;
         }
 
-        return true;
+        return true;*/
+        int count = 0;
+        for(Mail mail : dataSet.getMails()) {
+            if(!mail.isSpam()) count++;
+        }
+        return ((double)count / (double)(dataSet.getMails().size()) >= 0.95);
     }
 
 }
